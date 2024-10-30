@@ -1,2 +1,1 @@
 settings.py
-exclude_patterns = ['__pycache__/*']
