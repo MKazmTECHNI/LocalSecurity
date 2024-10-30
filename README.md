@@ -23,3 +23,7 @@ LocalSecurity is a tool that lets users remotely control their computer through 
 - **Mobile Support**: Access controls from your mobile device for added convenience.
 
 ---
+
+And heres some of **me** not AI generated README
+
+What's currently working is safety as loging out (lock) or shutdowning remotly (shut)
