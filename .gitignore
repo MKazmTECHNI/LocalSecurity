@@ -1,3 +1,4 @@
+.gitignore
 settings.py
 /tests/
-.gitignore
+__pycache__/
