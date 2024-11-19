@@ -1,8 +1,63 @@
+import requests
+import hashlib
+import os
+import sys
+import subprocess
+
+# Constants
+URL = "https://raw.githubusercontent.com/MKazmTECHNI/LocalSecurity/main/main.py"
+FILENAME = os.path.join(os.getcwd(), "main.py")
+
+
+def download_script():
+    response = requests.get(URL)
+    if response.status_code == 200:
+        return response.text
+    else:
+        raise Exception(
+            f"Failed to download script. HTTP Status: {response.status_code}"
+        )
+
+
+def get_file_hash(content):
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def update_and_rerun():
+    try:
+        with open(__file__, "r") as current_file:
+            current_script = current_file.read()
+
+        downloaded_script = download_script()
+
+        current_hash = get_file_hash(current_script)
+        downloaded_hash = get_file_hash(downloaded_script)
+
+        if current_hash != downloaded_hash:
+            print("Script has changed. Updating and restarting...")
+
+            with open(FILENAME, "w") as file:
+                file.write(downloaded_script)
+
+            subprocess.Popen([sys.executable, FILENAME])
+            sys.exit(0)  # Exit the current script after launching the new one
+        else:
+            print("Script is up-to-date. Continuing execution...")
+
+    except Exception as e:
+        print(f"Error during update check: {e}")
+        sys.exit(1)
+
+
+update_and_rerun()
+print("Running main script...")
+
 import discord
 from discord.ext import commands
 import ctypes
 import psutil
 import wmi
+import pyautogui
 from PIL import ImageGrab
 from io import BytesIO
 import cv2
@@ -45,7 +100,8 @@ help - sends this command... obviously.
 l / lock - logs out of current user 
 shut / shutdown - shutdowns computer...
 ? - sends screenshot and camera shot of current moment
-proc / proccess k / kill name - kills proccess with given name (for example. 'proc k discord') 
+proc/proccess k/kill name - kills proccess with given name (for example. 'proc k discord') 
+k/key press/p,down,up,write,hotkey keys - mimics computer keys (try it yourself)
 v/volume number = changes volume (for example. 'v 100' (sets volume to 100%))
 b/brightness number = changes brightness (for example. 'b 100' (sets brightness to 100%)))
             """
@@ -105,6 +161,46 @@ b/brightness number = changes brightness (for example. 'b 100' (sets brightness 
             )
         else:
             await message.channel.send("Failed to capture image")
+
+        # KEYING FUNCTIONALITY
+
+    elif (
+        message.content.lower().startswith("k")
+        and message.author.id == allowed_user_id
+        and message.channel.id == allowed_channel_id
+        or message.content.lower().startswith("key")
+        and message.author.id == allowed_user_id
+        and message.channel.id == allowed_channel_id
+    ):
+        try:
+            command_parts = message.content.lower().split(
+                " ", 2
+            )  # Split only the first two times
+            command = command_parts[1]
+
+            # I don't really know what could I explain here...
+            if command == "press" or command == "p":
+                pyautogui.keyDown(command_parts[2])
+                pyautogui.keyUp(command_parts[2])
+                await message.channel.send(f"Pressed {command_parts[2]}")
+            elif command == "down":
+                pyautogui.keyDown(command_parts[2])
+                await message.channel.send(f"Pressed down {command_parts[2]}")
+            elif command == "up":
+                pyautogui.keyUp(command_parts[2])
+                await message.channel.send(f"Pressed up {command_parts[2]}")
+            elif command == "write" or command == "w":
+                pyautogui.write(command_parts[2])  # Write everything after 'key write'
+                await message.channel.send(f"Written '{command_parts[2]}'")
+            elif command == "hotkey" or command == "hk":
+                hotkey_parts = command_parts[2].split()
+                pyautogui.hotkey(*hotkey_parts)
+                await message.channel.send(f"Pressed '{command_parts[2]}'")
+            else:
+                await message.channel.send("Choose one of key commands")
+
+        except IndexError:
+            await message.channel.send("Not enough arguments")
 
     # PROCCESS / PROC FUNCTIONALITY
     elif (
