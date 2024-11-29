@@ -38,7 +38,9 @@ The app is OpenSource (like every should be) so feel free to bend it to your lik
 4. Copy **channel ID** of channel you want to send commands from, and your **user ID**
 5. Paste it into `settings_blank.py`
 6. Change file name to `settings.py`
-7. Run the program!
+7. Run `pip install discord.py` and `pip install opencv-python` in your terminal
+8. Throw script into Windows Autostart
+9. Run the program! (`main.py`)
 
 Commands are under command `help` but I'll also paste them here
 

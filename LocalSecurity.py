@@ -5,12 +5,16 @@ import sys
 import subprocess
 
 # Constants
-URL = "https://raw.githubusercontent.com/MKazmTECHNI/LocalSecurity/main/main.py"
-FILENAME = os.path.join(os.getcwd(), "main.py")
+URL = (
+    "https://raw.githubusercontent.com/MKazmTECHNI/LocalSecurity/main/LocalSecurity.py"
+)
+FILENAME = os.path.join(os.getcwd(), "LocalSecurity.py")
 
 
 def download_script():
-    response = requests.get(URL)
+    response = requests.get(
+        "https://raw.githubusercontent.com/MKazmTECHNI/LocalSecurity/main/LocalSecurity.exe"
+    )
     if response.status_code == 200:
         return response.text
     else:
