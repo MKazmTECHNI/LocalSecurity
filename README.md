@@ -44,14 +44,21 @@ The app is OpenSource (like every should be) so feel free to bend it to your lik
 
 Commands are under command `help` but I'll also paste them here
 
-| Short           | options     | Explanation                                        | examples       |
-| --------------- | ----------- | -------------------------------------------------- | -------------- |
-| help            |             | sends help command... obviously                    | help           |
-| l / lock        |             | logs out of current user                           | l              |
-| shut / shutdown |             | shutdowns computer...                              | shut           |
-| ?               |             | sends screenshot and camera shot of current moment | ?              |
-| proc / proccess | k/kill name | kills proccess with given name                     | proc k discord |
-| v / volume      | number      | changes volume                                     | v 100          |
-| b / brightness  | number      | changes brightness                                 | b 100          |
+| Short           | options                            | Explanation                                        | examples          |
+| --------------- | ---------------------------------- | -------------------------------------------------- | ----------------- |
+| help            |                                    | sends help command... obviously                    | help              |
+| l / lock        |                                    | logs out of current user                           | l                 |
+| shut / shutdown |                                    | shutdowns computer...                              | shut              |
+| ?               |                                    | sends screenshot and camera shot of current moment | ?                 |
+| k / key         | press/p, hotkey/hk, write down, up | presses keys with chosen option                    | k hk alt tab      |
+| proc / proccess | k/kill name                        | kills proccess with given name                     | proc k discord    |
+| v / volume      | number                             | changes volume                                     | v 100             |
+| b / brightness  | number                             | changes brightness                                 | b 100             |
+| cmd             |                                    | executes simple commands and sends u feedback      | cmd echo Hello    |
+| py              |                                    | executes simple scripts and sends u feedback       | py print("Hello") |
+|                 |                                    |                                                    |                   |
+| pa              |                                    | pauses current song                                | pa                |
+| skips           |                                    | skips current song                                 | skip              |
+| prev            |                                    | rewinds current song                               | prev              |
 
 Created by MKazm ;p

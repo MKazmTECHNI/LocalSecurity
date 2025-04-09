@@ -1,70 +1,15 @@
-import requests
-import hashlib
-import os
-import sys
-import subprocess
-
-# Constants
-URL = (
-    "https://raw.githubusercontent.com/MKazmTECHNI/LocalSecurity/main/LocalSecurity.py"
-)
-FILENAME = os.path.join(os.getcwd(), "LocalSecurity.py")
-
-
-def download_script():
-    response = requests.get(
-        "https://raw.githubusercontent.com/MKazmTECHNI/LocalSecurity/main/LocalSecurity.exe"
-    )
-    if response.status_code == 200:
-        return response.text
-    else:
-        raise Exception(
-            f"Failed to download script. HTTP Status: {response.status_code}"
-        )
-
-
-def get_file_hash(content):
-    return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
-
-def update_and_rerun():
-    try:
-        with open(__file__, "r") as current_file:
-            current_script = current_file.read()
-
-        downloaded_script = download_script()
-
-        current_hash = get_file_hash(current_script)
-        downloaded_hash = get_file_hash(downloaded_script)
-
-        if current_hash != downloaded_hash:
-            print("Script has changed. Updating and restarting...")
-
-            with open(FILENAME, "w") as file:
-                file.write(downloaded_script)
-
-            subprocess.Popen([sys.executable, FILENAME])
-            sys.exit(0)  # Exit the current script after launching the new one
-        else:
-            print("Script is up-to-date. Continuing execution...")
-
-    except Exception as e:
-        print(f"Error during update check: {e}")
-        sys.exit(1)
-
-
-update_and_rerun()
-print("Running main script...")
-
 import discord
 from discord.ext import commands
 import ctypes
 import psutil
-import wmi
-import pyautogui
 from PIL import ImageGrab
 from io import BytesIO
 import cv2
+import time
+from pynput.keyboard import Controller, Key
+import time
+import subprocess
+
 
 
 from settings import allowed_user_id, allowed_channel_id, bot_token
@@ -76,8 +21,51 @@ kernel32 = ctypes.windll.kernel32
 VK_VOLUME_MUTE = 0xAD
 VK_VOLUME_DOWN = 0xAE
 VK_VOLUME_UP = 0xAF
+keyboard = Controller()
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+
+
+keys = {
+    "space": Key.space,
+    "ctrl": Key.ctrl,
+    "alt": Key.alt,
+    "tab": Key.tab,
+    "caps": Key.caps_lock,
+    "backspace": Key.backspace,
+    "esc": Key.esc,
+    "escape": Key.esc,
+    "back": Key.backspace,
+    "enter": Key.enter,
+    "del": Key.delete,
+    "delete": Key.delete,
+    "up": Key.up,
+    "down": Key.down,
+    "right": Key.right,
+    "left": Key.left,
+    "page_up": Key.page_up,
+    "page_down": Key.page_down,
+    "win": Key.cmd,
+    "cmd": Key.cmd,
+    "f1":Key.f1,
+    "f2":Key.f2,
+    "f3":Key.f3,
+    "f4":Key.f4,
+    "f5":Key.f5,
+    "f6":Key.f6,
+    "f7":Key.f7,
+    "f8":Key.f8,
+    "f9":Key.f9,
+    "f10":Key.f10,
+    "f11":Key.f11,
+    "f12":Key.f12,
+}
+
+def get_key(key_to_press):
+    for key, value in keys.items():
+        if key == key_to_press:
+            return value
+    return key_to_press
 
 
 @bot.event
@@ -108,6 +96,11 @@ proc/proccess k/kill name - kills proccess with given name (for example. 'proc k
 k/key press/p,down,up,write,hotkey keys - mimics computer keys (try it yourself)
 v/volume number = changes volume (for example. 'v 100' (sets volume to 100%))
 b/brightness number = changes brightness (for example. 'b 100' (sets brightness to 100%)))
+cmd = executes simple commands and sends u feedback (for example. 'cmd echo Hello')
+py = executes simple scripts and sends u feedback (for example. 'py print("Hello")')
+pa = pauses current song
+skip = skips current song
+prev = rewinds current song
             """
         )
 
@@ -181,25 +174,32 @@ b/brightness number = changes brightness (for example. 'b 100' (sets brightness 
                 " ", 2
             )  # Split only the first two times
             command = command_parts[1]
+            key_to_press = get_key(command_parts[2])
 
             # I don't really know what could I explain here...
             if command == "press" or command == "p":
-                pyautogui.keyDown(command_parts[2])
-                pyautogui.keyUp(command_parts[2])
+                keyboard.press(key_to_press)
+                keyboard.release(key_to_press)
                 await message.channel.send(f"Pressed {command_parts[2]}")
-            elif command == "down":
-                pyautogui.keyDown(command_parts[2])
+            elif command == "down" or command == "d":
+                keyboard.press(key_to_press)
                 await message.channel.send(f"Pressed down {command_parts[2]}")
-            elif command == "up":
-                pyautogui.keyUp(command_parts[2])
+            elif command == "up" or command == "u":
+                keyboard.release(key_to_press)
                 await message.channel.send(f"Pressed up {command_parts[2]}")
             elif command == "write" or command == "w":
-                pyautogui.write(command_parts[2])  # Write everything after 'key write'
+                keyboard.write(key_to_press)  # Write everything after 'key write'
                 await message.channel.send(f"Written '{command_parts[2]}'")
             elif command == "hotkey" or command == "hk":
                 hotkey_parts = command_parts[2].split()
-                pyautogui.hotkey(*hotkey_parts)
-                await message.channel.send(f"Pressed '{command_parts[2]}'")
+                try:
+                    for key in hotkey_parts:
+                        keyboard.press(get_key(key))
+                    for key in hotkey_parts: 
+                        keyboard.release(get_key(key))
+                    await message.channel.send(f"Pressed '{command_parts[2]}'")
+                except Exception as e:
+                    await message.channel.send(f"Error pressing hotkey: {e}")
             else:
                 await message.channel.send("Choose one of key commands")
 
@@ -239,32 +239,6 @@ b/brightness number = changes brightness (for example. 'b 100' (sets brightness 
         except Exception as e:
             await message.channel.send(e)
 
-        # CONTROLING BRIGHTNESS
-    elif (
-        message.content.lower().startswith("b")
-        and message.author.id == allowed_user_id
-        and message.channel.id == allowed_channel_id
-        or message.content.lower().startswith("brightness")
-        and message.author.id == allowed_user_id
-        and message.channel.id == allowed_channel_id
-    ):
-        try:
-            level = int(message.content.lower().split(" ")[1])
-            if level < 0 or level > 100:
-                await message.channel.send("Brightness must be between 0 and 100")
-                return
-
-            wmi_service = wmi.WMI(namespace="wmi")
-            methods = wmi_service.WmiMonitorBrightnessMethods()[0]
-
-            methods.WmiSetBrightness(level, 0)
-
-            await message.channel.send(f"Brighness set to {level}")
-        except ValueError:
-            await message.channel.send(
-                "Please provide a valid volume level between 0 and 100."
-            )
-
         # CONTROLING VOLUME
     if (
         message.content.lower().startswith("v")
@@ -289,6 +263,113 @@ b/brightness number = changes brightness (for example. 'b 100' (sets brightness 
             await message.channel.send(
                 "Please provide a valid volume level between 0 and 100."
             )
+
+# some commands to songies (songs)
+    if (
+        message.content.lower().startswith("pause")
+        and message.author.id == allowed_user_id
+        and message.channel.id == allowed_channel_id
+        or message.content.lower().startswith("pa")
+        and message.author.id == allowed_user_id
+        and message.channel.id == allowed_channel_id
+    ):
+        keyboard.press(Key.media_play_pause)
+        keyboard.release(Key.media_play_pause)
+        await message.channel.send("Music paused")
+    if (
+        message.content.lower().startswith("skip")
+        and message.author.id == allowed_user_id
+        and message.channel.id == allowed_channel_id
+    ):
+        keyboard.press(Key.media_next)
+        keyboard.release(Key.media_next)
+        await message.channel.send("Song skipped!")
+    if (
+        message.content.lower().startswith("prev")
+        and message.author.id == allowed_user_id
+        and message.channel.id == allowed_channel_id
+        or message.content.lower().startswith("prev")
+        and message.author.id == allowed_user_id
+        and message.channel.id == allowed_channel_id
+    ):
+        keyboard.press(Key.media_previous)
+        keyboard.release(Key.media_previous)
+        await message.channel.send("Song reverted!")
+
+    
+    # CMD FUNCTIONALITY
+    if (
+        message.content.lower().startswith("cmd")
+        and allowed_user_id == message.author.id
+        and allowed_channel_id == message.channel.id
+    ):
+        try:
+            command = message.content[len("cmd "):]  # Extract command after 'cmd'
+            result = subprocess.run(command, capture_output=True, text=True, shell=True)
+            output = result.stdout if result.stdout else result.stderr
+            if len(output) > 2000:  # Discord message limit
+                await message.channel.send("Output too long. Sending as a file.")
+                output_buffer = BytesIO(output.encode("utf-8"))
+                output_buffer.seek(0)
+                await message.channel.send(
+                    file=discord.File(fp=output_buffer, filename="cmd_output.txt")
+                )
+            else:
+                await message.channel.send(f"```\n{output}\n```")
+        except Exception as e:
+            await message.channel.send(f"Error executing command: {e}")
+
+      # PYTHON EXECUTION FUNCTIONALITY
+    elif (
+        message.content.lower().startswith("py")
+        and message.author.id == allowed_user_id
+        and message.channel.id == allowed_channel_id
+    ):
+        try:
+            code_to_execute = message.content.split(" ", 1)[1]
+            
+            # Capture output
+            import io
+            import contextlib
+            
+            output_buffer = io.StringIO()
+            with contextlib.redirect_stdout(output_buffer):
+                exec(code_to_execute, {"__builtins__": __builtins__})
+
+            # Get the output
+            output = output_buffer.getvalue().strip()
+            output_buffer.close()
+
+            # Send the output to Discord
+            if output:
+                await message.channel.send(f"```\n{output}\n```")
+            else:
+                await message.channel.send("Code executed successfully with no output.")
+        
+        except Exception as e:
+            await message.channel.send(f"Error executing Python code: {e}")
+
+    if (
+        message.content.lower().startswith("at")
+        and message.author.id == allowed_user_id
+        and message.channel.id == allowed_channel_id
+        or message.content.lower().startswith("alttab")
+        and message.author.id == allowed_user_id
+        and message.channel.id == allowed_channel_id
+    ):
+        times = message.content.lower().split()[1]
+        if times.isdigit():
+            keyboard.press("alt")
+            for i in range(int(times)):
+                keyboard.press("tab")
+            keyboard.release("tab")
+            keyboard.release("alt")
+            await message.channel.send(f"Alt-tabbed {times} times")
+        else:
+            await message.channel.send("Please provide a valid number of times to alt-tab.")
+        
+
+
 
 
 bot.run(str(bot_token))

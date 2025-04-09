@@ -2,3 +2,6 @@
 settings.py
 /tests/
 __pycache__/
+output
+build
+dist
